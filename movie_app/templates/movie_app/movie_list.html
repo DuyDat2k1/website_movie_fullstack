@@ -1,0 +1,52 @@
+{% extends 'movie_app/base.html' %}
+{% load static %}
+
+{% block title %}Trang chủ - Web Movie{% endblock %}
+
+{% block content %}
+<form class="d-flex mb-4" method="get">
+    <input class="form-control me-2" type="search" name="q" placeholder="Tìm phim..." value="{{ request.GET.q }}">
+    <button class="btn btn-outline-primary" type="submit">Tìm</button>
+</form>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for movie in movies %}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.title }}" style="height: 350px; object-fit: cover;">
+            {% else %}
+            <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: 350px;">
+                <span class="text-white fs-4">No Poster</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ movie.title }}</h5>
+                <p class="card-text text-muted">{{ movie.release_year }}</p>
+                <p class="card-text">{{ movie.description|truncatewords:20 }}</p>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">Chưa có phim nào.</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page=1">&laquo; Đầu</a></li>
+            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}">Trước</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}">Sau</a></li>
+            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Cuối &raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
