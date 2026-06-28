@@ -1,0 +1,26 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - uat
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to UAT
+        if: github.ref_name == 'uat'
+        run: |
+          APP_PORT=8001 docker compose -p uat up -d --build
+          docker compose -p uat exec -T web python manage.py migrate --noinput
+
+      - name: Deploy to Production
+        if: github.ref_name == 'main'
+        run: |
+          docker compose up -d --build
+          docker compose exec -T web python manage.py migrate --noinput

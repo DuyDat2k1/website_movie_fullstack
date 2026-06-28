@@ -29,3 +29,11 @@ staticfiles/
 # OS
 Thumbs.db
 Desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+cloudflared.deb
+*.tar.gz
+actions-runner/
