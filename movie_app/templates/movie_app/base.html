@@ -1,24 +1,352 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Web Movie{% endblock %}</title>
+    <title>{% block title %}PhimMoi - Xem phim online miễn phí{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-nav: #0a0a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #aaa;
+            --accent: #e50914;
+            --accent-hover: #ff0f1f;
+            --border-color: #2a2a4a;
+            --card-radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: var(--bg-nav);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-custom .navbar-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.5rem;
+            padding: 12px 0;
+            letter-spacing: -0.5px;
+        }
+        .navbar-custom .navbar-brand span { color: #fff; }
+        .navbar-custom .nav-link {
+            color: var(--text-secondary) !important;
+            font-size: 0.9rem;
+            padding: 14px 14px !important;
+            transition: color 0.2s;
+        }
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link.active {
+            color: #fff !important;
+        }
+        .navbar-custom .dropdown-menu {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .navbar-custom .dropdown-menu::-webkit-scrollbar { width: 4px; }
+        .navbar-custom .dropdown-menu::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+        .navbar-custom .dropdown-item {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-radius: 4px;
+            padding: 6px 12px;
+        }
+        .navbar-custom .dropdown-item:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        .navbar-custom .search-form {
+            position: relative;
+        }
+        .navbar-custom .search-form input {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: #fff;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            width: 220px;
+        }
+        .navbar-custom .search-form input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+        .navbar-custom .search-form button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+        }
+
+        /* Sections */
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .section-title h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            padding-left: 14px;
+        }
+        .section-title h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            bottom: 4px;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        .section-title .view-all {
+            color: var(--accent);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .section-title .view-all:hover { text-decoration: underline; }
+
+        /* Movie Card */
+        .movie-card {
+            position: relative;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            background: var(--bg-card);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .movie-card:hover {
+            transform: translateY(-4px);
+        }
+        .movie-card .poster-wrap {
+            position: relative;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+        }
+        .movie-card .poster-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .movie-card:hover .poster-wrap img {
+            transform: scale(1.05);
+        }
+        .movie-card .badges {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .movie-card .badges .badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .movie-card .badge-quality {
+            background: var(--accent);
+            color: #fff;
+        }
+        .movie-card .badge-type {
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+        }
+        .movie-card .badge-episode {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.75);
+            color: #ffc107;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+        .movie-card .card-info {
+            padding: 10px;
+        }
+        .movie-card .card-info .movie-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0 0 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .movie-card .card-info .movie-title-original {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+        .movie-card .card-info .movie-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 8px;
+        }
+        .movie-card .card-info .movie-meta .year {
+            color: #ffc107;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            margin-bottom: 32px;
+        }
+        .hero-section .section-title h2 {
+            color: var(--accent);
+        }
+        .hero-section .section-title h2::before {
+            background: var(--accent);
+        }
+
+        /* Footer */
+        .footer-custom {
+            background: var(--bg-nav);
+            border-top: 1px solid var(--border-color);
+            padding: 40px 0 20px;
+            margin-top: 40px;
+        }
+        .footer-custom h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .footer-custom a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .footer-custom a:hover { color: #fff; }
+        .footer-custom .footer-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+        .footer-custom .footer-brand span { color: #fff; }
+        .footer-custom .copyright {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 32px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .footer-custom .stats { color: var(--text-secondary); font-size: 0.85rem; }
+
+        @media (max-width: 768px) {
+            .navbar-custom .search-form input { width: 100%; }
+            .section-title h2 { font-size: 1.1rem; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'movie_list' %}">🎬 Web Movie</a>
+            <a class="navbar-brand" href="{% url 'movie_list' %}">Phim<span>Moi</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Thể Loại</a>
+                        <ul class="dropdown-menu">
+                            {% for genre in genres %}
+                            <li><a class="dropdown-item" href="#">{{ genre.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Quốc Gia</a>
+                        <ul class="dropdown-menu">
+                            {% for country in countries %}
+                            <li><a class="dropdown-item" href="#">{{ country.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+                <form class="search-form d-flex" method="get" action="{% url 'movie_list' %}">
+                    <input type="search" name="q" placeholder="Tìm phim..." value="{{ request.GET.q }}">
+                    <button type="submit"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
         </div>
     </nav>
 
-    <main class="container py-4">
+    <main>
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-white text-center py-3 mt-4">
-        <p class="mb-0">Web Movie &copy; 2026</p>
+    <footer class="footer-custom">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="footer-brand">Phim<span>Moi</span></div>
+                    <p class="stats mt-2">Xem phim online miễn phí, cập nhật liên tục mỗi ngày.</p>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h5>Danh mục</h5>
+                    <a href="#">Phim lẻ</a>
+                    <a href="#">Phim bộ</a>
+                    <a href="#">Phim chiếu rạp</a>
+                    <a href="#">Hoạt hình</a>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h5>Quốc gia</h5>
+                    <a href="#">Việt Nam</a>
+                    <a href="#">Hàn Quốc</a>
+                    <a href="#">Trung Quốc</a>
+                    <a href="#">Âu Mỹ</a>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h5>Hỗ trợ</h5>
+                    <a href="#">Giới thiệu</a>
+                    <a href="#">Liên hệ</a>
+                    <a href="#">FAQ</a>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h5>Pháp lý</h5>
+                    <a href="#">Điều khoản</a>
+                    <a href="#">Chính sách</a>
+                </div>
+            </div>
+            <div class="copyright text-center">
+                &copy; 2026 PhimMoi. All rights reserved.
+            </div>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -3,6 +3,8 @@ services:
     build: .
     env_file:
       - .env
+    environment:
+      DJANGO_DB_PATH: ${DJANGO_DB_PATH:-/app/data/main.sqlite3}
     volumes:
       - sqlite_data:/app/data
       - staticfiles:/app/staticfiles
