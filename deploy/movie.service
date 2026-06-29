@@ -1,0 +1,13 @@
+[Unit]
+Description=Movie Django App
+After=network.target
+
+[Service]
+Type=simple
+User=dmin
+WorkingDirectory=/home/dmin/web_movie
+ExecStart=/home/dmin/web_movie/venv/bin/gunicorn movie_project.wsgi:application --bind 127.0.0.1:8000 --workers 3
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

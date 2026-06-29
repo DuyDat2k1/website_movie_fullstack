@@ -1,0 +1,11 @@
+[Unit]
+Description=Cloudflare Tunnel (trycloudflare.com)
+After=network.target
+
+[Service]
+ExecStart=%h/.local/bin/cloudflared tunnel --url http://localhost:80
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

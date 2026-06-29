@@ -23,6 +23,13 @@
             <div class="card-body">
                 <h5 class="card-title">{{ movie.title }}</h5>
                 <p class="card-text text-muted">{{ movie.release_year }}</p>
+                {% if movie.genres.all %}
+                <div class="mb-2">
+                    {% for genre in movie.genres.all %}
+                    <span class="badge bg-secondary me-1">{{ genre.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <p class="card-text">{{ movie.description|truncatewords:20 }}</p>
             </div>
         </div>
