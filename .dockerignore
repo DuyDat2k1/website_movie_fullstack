@@ -1,0 +1,16 @@
+.git/
+.gitignore
+.gitattributes
+.history/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+*.sqlite3
+staticfiles/
+.vscode/
+.idea/
+actions-runner/
+*.tar.gz
+*.md
+.github/

@@ -9,7 +9,7 @@ class Genre(models.Model):
     class Meta:
         ordering = ['name']
         verbose_name = "Gerne"
-        verbose_name_plural = "Gerne"
+        verbose_name_plural = ""
 
 
 class Movie(models.Model):
@@ -17,7 +17,7 @@ class Movie(models.Model):
     description = models.TextField(verbose_name="Mô tả")
     poster = models.URLField(max_length=500, blank=True, verbose_name="URL poster")
     release_year = models.IntegerField(verbose_name="Năm phát hành")
-    genres = models.ManyToManyField(Genre, verbose_name="Gerne")
+    genres = models.ManyToManyField(Genre, verbose_name="Thể loại")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
