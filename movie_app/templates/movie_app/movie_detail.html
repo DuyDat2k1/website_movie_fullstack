@@ -1,0 +1,367 @@
+{% extends 'movie_app/base.html' %}
+{% block title %}{{ movie.title }} - PhimMoi{% endblock %}
+{% block content %}
+<link href="https://vjs.zencdn.net/8.16.1/video-js.css" rel="stylesheet">
+<style>
+.video-wrapper {
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  position: relative;
+}
+.video-wrapper video {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  max-height: 70vh;
+}
+.video-js {
+  width: 100% !important;
+  height: 100% !important;
+}
+.vjs-big-play-button {
+  border-color: var(--accent) !important;
+  background: var(--accent) !important;
+  border-radius: 50% !important;
+}
+.vjs-control-bar {
+  background: rgba(0,0,0,0.8) !important;
+}
+.player-placeholder {
+  width: 100%;
+  aspect-ratio: 16/9;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+  color: var(--text-secondary);
+  gap: 12px;
+  cursor: pointer;
+}
+.player-placeholder i {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+.player-placeholder p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+.movie-info-section {
+  margin-bottom: 32px;
+}
+.movie-info-section .row {
+  display: flex;
+  gap: 24px;
+}
+.movie-info-section .poster-col {
+  flex-shrink: 0;
+  width: 200px;
+}
+.movie-info-section .poster-col img {
+  width: 100%;
+  border-radius: 10px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+.movie-info-section .info-col {
+  flex: 1;
+  min-width: 0;
+}
+.movie-info-section h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.original-title {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+.movie-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.movie-meta-tags .tag {
+  background: #2a2a4a;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.movie-meta-tags .tag i { margin-right: 4px; }
+.movie-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.movie-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.movie-stats .stat i { margin-right: 4px; color: var(--accent); }
+.genres-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.genres-list span {
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+.server-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.server-btn {
+  padding: 6px 16px;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.server-btn:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+.server-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.episode-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.episode-btn {
+  min-width: 44px;
+  padding: 8px 16px;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.episode-btn:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+.episode-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.related-section h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-left: 14px;
+  position: relative;
+}
+.related-section h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .movie-info-section .poster-col { width: 120px; }
+  .movie-info-section h1 { font-size: 1.2rem; }
+  .related-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+</style>
+
+<div class="container py-4">
+  {% if episodes %}
+  <div class="video-wrapper">
+    {% with first_episode=episodes.0 %}
+    {% if first_episode.link_m3u8 %}
+    <video id="player" class="video-js vjs-theme-city vjs-big-play-centered" controls preload="auto" data-setup='{"fluid":true,"html5":{"hls":{"overrideNative":true}}}'>
+      <source src="{{ first_episode.link_m3u8 }}" type="application/x-mpegURL">
+    </video>
+    {% elif first_episode.link_embed %}
+    <div class="player-placeholder" id="embedPlaceholder">
+      <i class="bi bi-play-circle"></i>
+      <p>Nhấn để phát</p>
+    </div>
+    <iframe id="embedPlayer" src="{{ first_episode.link_embed }}" style="display:none;width:100%;aspect-ratio:16/9;max-height:70vh;border:none;" allowfullscreen></iframe>
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  {% with servers=episodes|dictsort:"server_name" %}
+  {% if episodes|length > 1 or servers|length > 1 %}
+  <div class="server-select">
+    {% for server_name in server_names %}
+    <button class="server-btn {% if forloop.first %}active{% endif %}" onclick="switchServer(this, '{{ server_name|escapejs }}')">{{ server_name }}</button>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% for server_name in server_names %}
+  <div class="server-episodes" data-server="{{ server_name }}" style="display:{% if forloop.first %}block{% else %}none{% endif %}">
+    <div class="episode-grid">
+      {% for ep in episodes %}
+      {% if ep.server_name == server_name %}
+      <button class="episode-btn {% if forloop.parentloop.first and forloop.first %}active{% endif %}" data-id="{{ ep.id }}" onclick="playEpisode({{ ep.id }}, this)">{{ ep.name }}</button>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endwith %}
+  {% endif %}
+
+  <div class="movie-info-section">
+    <div class="row">
+      <div class="poster-col">
+        <img src="{{ movie.poster|default:'' }}" alt="{{ movie.title }}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+      </div>
+      <div class="info-col">
+        <h1>{{ movie.title }}</h1>
+        {% if movie.title_original %}
+        <div class="original-title">{{ movie.title_original }}</div>
+        {% endif %}
+        <div class="movie-meta-tags">
+          <span class="tag"><i class="bi bi-calendar"></i>{{ movie.release_year }}</span>
+          <span class="tag"><i class="bi bi-tag"></i>{{ movie.get_movie_type_display }}</span>
+          <span class="tag"><i class="bi bi-hdd"></i>{{ movie.get_quality_display }}</span>
+          {% if movie.country %}
+          <span class="tag"><i class="bi bi-globe"></i>{{ movie.country.name }}</span>
+          {% endif %}
+          {% if movie.episode_count %}
+          <span class="tag"><i class="bi bi-collection-play"></i>{{ movie.episode_count }} tập</span>
+          {% endif %}
+        </div>
+        <div class="movie-description">{{ movie.description|linebreaksbr }}</div>
+        <div class="movie-stats">
+          <span class="stat"><i class="bi bi-eye"></i>{{ movie.views }} lượt xem</span>
+        </div>
+        {% if movie.genres.all %}
+        <div class="genres-list">
+          {% for genre in movie.genres.all %}
+          <span>{{ genre.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if related_movies %}
+  <div class="related-section">
+    <h2>Phim cùng thể loại</h2>
+    <div class="related-grid">
+      {% for rm in related_movies %}
+      <a href="{% url 'movie_detail' rm.slug %}" style="text-decoration:none;">
+        <div class="movie-card">
+          <div class="poster-wrap">
+            <img src="{{ rm.poster|default:'' }}" alt="{{ rm.title }}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+            <div class="badges">
+              <span class="badge badge-quality">{{ rm.get_quality_display }}</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ rm.title }}</div>
+            <div class="movie-meta"><span class="year">{{ rm.release_year }}</span></div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script src="https://vjs.zencdn.net/8.16.1/video.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@videojs/http-streaming@2.16.2/dist/videojs-http-streaming.min.js"></script>
+<script>
+let player = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  const videoEl = document.getElementById('player');
+  if (videoEl) {
+    player = videojs(videoEl, {
+      controls: true,
+      fluid: true,
+      html5: {
+        hls: {
+          enableLowInitialPlaylist: true,
+          smoothQualityChange: true,
+          overrideNative: true,
+        },
+        nativeAudioTracks: false,
+        nativeVideoTracks: false,
+      }
+    });
+  }
+
+  const embedPlaceholder = document.getElementById('embedPlaceholder');
+  const embedPlayer = document.getElementById('embedPlayer');
+  if (embedPlaceholder && embedPlayer) {
+    embedPlaceholder.addEventListener('click', function() {
+      embedPlaceholder.style.display = 'none';
+      embedPlayer.style.display = 'block';
+    });
+  }
+});
+
+function playEpisode(episodeId, btn) {
+  fetch('/api/movie/episode/' + episodeId + '/')
+    .then(r => r.json())
+    .then(data => {
+      document.querySelectorAll('.episode-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      if (player) {
+        if (data.link_m3u8) {
+          player.src({ src: data.link_m3u8, type: 'application/x-mpegURL' });
+          player.play();
+        }
+      } else {
+        const wrapper = document.querySelector('.video-wrapper');
+        if (wrapper && data.link_embed) {
+          wrapper.innerHTML = '<iframe src="' + data.link_embed + '" style="width:100%;aspect-ratio:16/9;max-height:70vh;border:none;" allowfullscreen></iframe>';
+        }
+      }
+    });
+}
+
+function switchServer(btn, serverName) {
+  document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.server-episodes').forEach(el => el.style.display = 'none');
+  const target = document.querySelector('.server-episodes[data-server="' + serverName + '"]');
+  if (target) target.style.display = 'block';
+}
+</script>
+{% endblock %}
