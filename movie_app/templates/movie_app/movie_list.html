@@ -1,59 +1,268 @@
 {% extends 'movie_app/base.html' %}
 {% load static %}
 
-{% block title %}Trang chủ - Web Movie{% endblock %}
+{% block title %}PhimMoi - Xem phim online miễn phí{% endblock %}
 
 {% block content %}
-<form class="d-flex mb-4" method="get">
-    <input class="form-control me-2" type="search" name="q" placeholder="Tìm phim..." value="{{ request.GET.q }}">
-    <button class="btn btn-outline-primary" type="submit">Tìm</button>
-</form>
 
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-    {% for movie in movies %}
-    <div class="col">
-        <div class="card h-100 shadow-sm">
+{% if featured_movies %}
+<section class="hero-section">
+  <div class="container">
+    <div class="section-title">
+      <h2>PHIM MỚI ĐỀ CỬ</h2>
+      <a href="#" class="view-all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+      {% for movie in featured_movies %}
+      <div class="col">
+        <div class="movie-card">
+          <div class="poster-wrap">
             {% if movie.poster %}
-            <img src="{{ movie.poster }}" class="card-img-top" alt="{{ movie.title }}" style="height: 350px; object-fit: cover;">
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
             {% else %}
-            <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: 350px;">
-                <span class="text-white fs-4">No Poster</span>
+            <div class="bg-secondary d-flex align-items-center justify-content-center h-100">
+              <span class="text-white fs-4">No Poster</span>
             </div>
             {% endif %}
-            <div class="card-body">
-                <h5 class="card-title">{{ movie.title }}</h5>
-                <p class="card-text text-muted">{{ movie.release_year }}</p>
-                {% if movie.genres.all %}
-                <div class="mb-2">
-                    {% for genre in movie.genres.all %}
-                    <span class="badge bg-secondary me-1">{{ genre.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <p class="card-text">{{ movie.description|truncatewords:20 }}</p>
+            <div class="badges">
+              <span class="badge badge-quality">{{ movie.quality }}</span>
+              <span class="badge badge-type">{{ movie.get_movie_type_display }}</span>
             </div>
+            {% if movie.episode_count %}
+            <div class="badge-episode">{{ movie.episode_count }} tập</div>
+            {% endif %}
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            {% if movie.title_original %}
+            <div class="movie-title-original">{{ movie.title_original }}</div>
+            {% endif %}
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_year }}</span>
+              <span>{{ movie.country.name }}</span>
+            </div>
+          </div>
         </div>
+      </div>
+      {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-12">
-        <div class="alert alert-info text-center">Chưa có phim nào.</div>
-    </div>
-    {% endfor %}
-</div>
-
-{% if page_obj.paginator.num_pages > 1 %}
-<nav class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page=1">&laquo; Đầu</a></li>
-            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}">Trước</a></li>
-        {% endif %}
-        <li class="page-item active"><span class="page-link">Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
-        {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}">Sau</a></li>
-            <li class="page-item"><a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Cuối &raquo;</a></li>
-        {% endif %}
-    </ul>
-</nav>
+  </div>
+</section>
 {% endif %}
+
+{% if series_movies %}
+<section class="mb-4">
+  <div class="container">
+    <div class="section-title">
+      <h2>PHIM BỘ MỚI CẬP NHẬT</h2>
+      <a href="#" class="view-all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 g-md-3">
+      {% for movie in series_movies %}
+      <div class="col">
+        <div class="movie-card">
+          <div class="poster-wrap">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+            {% else %}
+            <div class="bg-secondary d-flex align-items-center justify-content-center h-100">
+              <span class="text-white fs-4">No Poster</span>
+            </div>
+            {% endif %}
+            <div class="badges">
+              <span class="badge badge-quality">{{ movie.quality }}</span>
+            </div>
+            {% if movie.episode_count %}
+            <div class="badge-episode">Hoàn tất ({{ movie.episode_count }} tập)</div>
+            {% endif %}
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            {% if movie.title_original %}
+            <div class="movie-title-original">{{ movie.title_original }}</div>
+            {% endif %}
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_year }}</span>
+              <span>{{ movie.country.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if cinema_movies %}
+<section class="mb-4">
+  <div class="container">
+    <div class="section-title">
+      <h2>PHIM CHIẾU RẠP MỚI</h2>
+      <a href="#" class="view-all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 g-md-3">
+      {% for movie in cinema_movies %}
+      <div class="col">
+        <div class="movie-card">
+          <div class="poster-wrap">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+            {% else %}
+            <div class="bg-secondary d-flex align-items-center justify-content-center h-100">
+              <span class="text-white fs-4">No Poster</span>
+            </div>
+            {% endif %}
+            <div class="badges">
+              <span class="badge badge-quality">{{ movie.quality }}</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            {% if movie.title_original %}
+            <div class="movie-title-original">{{ movie.title_original }}</div>
+            {% endif %}
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_year }}</span>
+              <span>{{ movie.country.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if latest_movies %}
+<section class="mb-4">
+  <div class="container">
+    <div class="section-title">
+      <h2>PHIM LẺ MỚI CẬP NHẬT</h2>
+      <a href="#" class="view-all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 g-md-3">
+      {% for movie in latest_movies %}
+      <div class="col">
+        <div class="movie-card">
+          <div class="poster-wrap">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+            {% else %}
+            <div class="bg-secondary d-flex align-items-center justify-content-center h-100">
+              <span class="text-white fs-4">No Poster</span>
+            </div>
+            {% endif %}
+            <div class="badges">
+              <span class="badge badge-quality">{{ movie.quality }}</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            {% if movie.title_original %}
+            <div class="movie-title-original">{{ movie.title_original }}</div>
+            {% endif %}
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_year }}</span>
+              <span>{{ movie.country.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if trending_movies %}
+<section class="mb-4">
+  <div class="container">
+    <div class="section-title">
+      <h2>PHIM MỚI THỊNH HÀNH</h2>
+      <a href="#" class="view-all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 g-md-3">
+      {% for movie in trending_movies %}
+      <div class="col">
+        <div class="movie-card">
+          <div class="poster-wrap">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+            {% else %}
+            <div class="bg-secondary d-flex align-items-center justify-content-center h-100">
+              <span class="text-white fs-4">No Poster</span>
+            </div>
+            {% endif %}
+            <div class="badges">
+              <span class="badge badge-quality">{{ movie.quality }}</span>
+              <span class="badge badge-type">{{ movie.get_movie_type_display }}</span>
+            </div>
+            {% if movie.episode_count %}
+            <div class="badge-episode">{{ movie.episode_count }} tập</div>
+            {% endif %}
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            {% if movie.title_original %}
+            <div class="movie-title-original">{{ movie.title_original }}</div>
+            {% endif %}
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_year }}</span>
+              <span>{{ movie.country.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if animation_movies %}
+<section class="mb-4">
+  <div class="container">
+    <div class="section-title">
+      <h2>PHIM HOẠT HÌNH & ANIME</h2>
+      <a href="#" class="view-all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2 g-md-3">
+      {% for movie in animation_movies %}
+      <div class="col">
+        <div class="movie-card">
+          <div class="poster-wrap">
+            {% if movie.poster %}
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+            {% else %}
+            <div class="bg-secondary d-flex align-items-center justify-content-center h-100">
+              <span class="text-white fs-4">No Poster</span>
+            </div>
+            {% endif %}
+            <div class="badges">
+              <span class="badge badge-quality">{{ movie.quality }}</span>
+            </div>
+            {% if movie.episode_count %}
+            <div class="badge-episode">{{ movie.episode_count }} tập</div>
+            {% endif %}
+          </div>
+          <div class="card-info">
+            <div class="movie-title">{{ movie.title }}</div>
+            {% if movie.title_original %}
+            <div class="movie-title-original">{{ movie.title_original }}</div>
+            {% endif %}
+            <div class="movie-meta">
+              <span class="year">{{ movie.release_year }}</span>
+              <span>{{ movie.country.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 {% endblock %}

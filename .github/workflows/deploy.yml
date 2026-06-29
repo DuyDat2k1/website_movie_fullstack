@@ -19,11 +19,11 @@ jobs:
       - name: Deploy to UAT
         if: github.ref_name == 'uat'
         run: |
-          APP_PORT=8001 docker compose -p uat up -d --build
+          APP_PORT=8001 DJANGO_DB_PATH=/app/data/uat.sqlite3 docker compose -p uat up -d --build
           docker compose -p uat exec -T web python manage.py migrate --noinput
 
       - name: Deploy to Production
         if: github.ref_name == 'main'
         run: |
-          docker compose up -d --build
+          DJANGO_DB_PATH=/app/data/main.sqlite3 docker compose up -d --build
           docker compose exec -T web python manage.py migrate --noinput
